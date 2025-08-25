@@ -1,0 +1,139 @@
+{
+  "CHARACTER_REGISTRY": {
+    "Hero": {
+      "voice": "hi-IN-MadhurNeural",
+      "seed": "12345",
+      "ref_image": "assets/characters/hero.png"
+    },
+    "Heroine": {
+      "voice": "hi-IN-SwaraNeural",
+      "seed": "54321",
+      "ref_image": "assets/characters/heroine.png"
+    },
+    "Mysterious Stranger": {
+      "voice": "en-US-GuyNeural",
+      "seed": "98765",
+      "ref_image": "assets/characters/stranger.png"
+    }
+  },
+  "scenes": [
+    {
+      "description": "A Japanese high-school rooftop at sunset, cherry blossoms flying in the wind. The Hero and Heroine stand close, silence filled with emotions.",
+      "duration": 25,
+      "mood": "romantic",
+      "dialogue": [
+        {
+          "character": "Hero",
+          "text": "Tumse milne ke baad lagta hai zindagi ki daud thodi halki ho gayi hai.",
+          "lang": "hi"
+        },
+        {
+          "character": "Heroine",
+          "text": "Aur tumhari har baat mere dil mein goonj jaati hai.",
+          "lang": "hi",
+          "slang": "hindi_bihari"
+        }
+      ],
+      "sfx": ["wind.mp3", "birds.mp3"]
+    },
+    {
+      "description": "Close-up of Heroine’s face as she smiles nervously. A shadow appears behind them — a tall figure watching from the distance.",
+      "duration": 20,
+      "mood": "mystery",
+      "dialogue": [
+        {
+          "character": "Heroine",
+          "text": "Kya tumne mehsoos kiya? Jaise koi hume dekh raha ho?",
+          "lang": "hi"
+        }
+      ],
+      "sfx_timed": [
+        {"file": "footsteps.mp3", "time": 8}
+      ]
+    },
+    {
+      "description": "The Mysterious Stranger steps forward, his face hidden in the dark. Japanese lanterns flicker in the background by the riverbank.",
+      "duration": 30,
+      "mood": "mystery",
+      "dialogue": [
+        {
+          "character": "Mysterious Stranger",
+          "text": "Tum dono ki kahaani mein ek raaz chhupa hai… jo abhi khulne wala hai.",
+          "lang": "hi"
+        }
+      ],
+      "sfx": ["river_flow.mp3", "heartbeat.mp3"]
+    },
+    {
+      "description": "The Hero protects the Heroine, standing firmly. The Stranger reveals an old locket glowing in the moonlight.",
+      "duration": 30,
+      "mood": "angry",
+      "dialogue": [
+        {
+          "character": "Hero",
+          "text": "Tum kaun ho? Aur yeh humari zindagi mein kyon aaya ho?",
+          "lang": "hi"
+        },
+        {
+          "character": "Mysterious Stranger",
+          "text": "Sach yeh hai… tumhari taqdeer hum teenon ko jodti hai.",
+          "lang": "hi"
+        }
+      ],
+      "sfx": ["sword_clash.mp3", "dramatic_boom.mp3"]
+    },
+    {
+      "description": "A flashback sequence appears — cherry blossoms turn red like blood, Hero’s childhood memory of losing someone plays out.",
+      "duration": 25,
+      "mood": "sad",
+      "dialogue": [
+        {
+          "character": "Hero",
+          "text": "Yeh locket… yeh toh meri maa ka tha…",
+          "lang": "hi"
+        }
+      ],
+      "sfx": ["whisper.mp3"]
+    },
+    {
+      "description": "The Stranger places the locket in Hero’s hand. Heroine holds Hero’s arm, assuring him with her presence.",
+      "duration": 20,
+      "mood": "romantic",
+      "dialogue": [
+        {
+          "character": "Heroine",
+          "text": "Jo bhi sach ho… main tumhare saath hoon.",
+          "lang": "hi",
+          "slang": "hindi_up"
+        }
+      ]
+    },
+    {
+      "description": "Final fireworks above a Japanese castle. The three stand together — Hero and Heroine closer, Stranger looking at the sky.",
+      "duration": 30,
+      "mood": "epic",
+      "dialogue": [
+        {
+          "character": "Hero",
+          "text": "Hamari kahaani abhi shuru hui hai.",
+          "lang": "hi"
+        },
+        {
+          "character": "Heroine",
+          "text": "Aur is dafa hum apni kismat khud likhenge.",
+          "lang": "hi",
+          "slang": "hindi_mumbaiya"
+        },
+        {
+          "character": "Mysterious Stranger",
+          "text": "Phir dekhte hain… kahaani kahan tak jaati hai.",
+          "lang": "hi"
+        }
+      ],
+      "sfx_timed": [
+        {"file": "fireworks.mp3", "time": 3},
+        {"file": "fireworks.mp3", "time": 12}
+      ]
+    }
+  ]
+}

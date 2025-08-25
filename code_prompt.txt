@@ -1,0 +1,253 @@
+
+# 🔹 Master Prompt (Save This)
+
+Here’s the **one-shot master prompt** you can reuse anytime to regenerate the **whole project**:
+
+```
+You are an expert Python developer, multimedia engineer, and anime fan.
+
+I want you to generate a **complete Python project** that creates **anime-style videos from a story JSON file**.  
+
+## Requirements:
+
+1. **Features**
+   - Generate anime-style images from text descriptions (stub for now).
+   - Add cinematic prompts automatically (e.g., "anime style, cinematic, Shinkai/Ufotable style").
+   - Multi-language voices: Hindi (default), English, Japanese.
+   - Regional dialects/slangs: Mumbaiya, Haryanvi, Bihari, UP, US/UK English, Kansai/Tokyo Japanese.
+   - Default spoken language = Hindi.
+   - Default subtitle language = English (can be changed).
+   - Translate subtitles using deep-translator.
+   - Overlay subtitles on scene images using Pillow.
+   - Mood-driven cinematic effects:
+     - BGM auto-selection.
+     - Fight choreography expansion for angry/epic.
+     - Camera intensity + lighting.
+   - Camera effects: zoom, pan, shake.
+   - Sound effects (SFX) overlay.
+   - Duration per scene.
+   - Voice + BGM + SFX mixed with ducking (voice prioritized).
+
+2. **Tech Stack**
+   - Python 3.9+
+   - `moviepy`, `pydub`, `deep-translator`, `Pillow`
+   - Stubs for TTS and image generation.
+
+3. **Project Structure**
+```
+
+anime\_generator/
+│── main.py
+│── story.json
+│── assets/
+│    ├── bgm/
+│    ├── sfx/
+│── outputs/
+│── temp/
+│── requirements.txt
+│── README.md
+
+````
+
+4. **README.md**
+- Windows installation guide:
+  - Install Python 3.9+
+  - Install FFmpeg
+  - Run `pip install -r requirements.txt`
+- How to run:
+  ```
+  python main.py story.json
+  ```
+- Example `story.json` (with style, default_language, default_subtitle, characters, scenes).
+- Explain every field:
+  - `style`, `default_language`, `default_subtitle`
+  - `characters` (dialect, voices)
+  - `scenes` (character, description, dialogue, mood, camera, sfx, duration)
+
+5. **Deliverables**
+- `main.py` (full script with docstrings, stubs, logic)
+- `requirements.txt`
+- `README.md` with step-by-step usage
+- Example `story.json`
+
+⚡ Generate the entire project in one go with all code, files, and explanations.
+----------------------------------------------------------------------------------------------------
+
+updated prompt
+You are an expert Python developer and FastAPI/AI multimedia engineer. 
+Generate a **production-ready Python script** named `main.py` that builds **anime-style videos** from a structured story JSON. 
+Include **all the features discussed below**. The script must be modular, fully functional, and well-documented with docstrings explaining each function and its purpose.
+
+---
+
+### Features to include:
+
+1. 🎨 **Anime-style image generation**
+   - Function: `generate_scene_image(scene)`
+   - Stub implementation is fine, but allow easy swapping with Stable Diffusion, ComfyUI, or AnimeGANv2.
+
+2. 🗣️ **Multi-language voice synthesis**
+   - Function: `generate_voice_audio(text, lang, voice)`
+   - Use **Coqui TTS** (preferred) or **gTTS** as fallback.
+   - Default spoken language = Hindi.
+   - Supported languages: Hindi, English, Japanese.
+   - Voices/slangs selectable per character.
+
+3. 🗨️ **Regional dialects/slangs**
+   - Function: `apply_slang(text, voice_style)`
+   - Must handle Hindi variants: Mumbaiya, Bihari, UP, Haryanvi.
+
+4. 📜 **Subtitles auto-translation**
+   - Function: `generate_subtitles(text, lang)`
+   - Use `deep-translator`.
+   - Default overlay language = English.
+   - Subtitles overlaid on images using Pillow/TextClip.
+
+5. 🎵 **Background music (BGM) selection**
+   - Function: `pick_bgm(mood)`
+   - Automatically pick music based on scene mood (happy, sad, epic, romantic, angry, mystery, neutral).
+   - Can be overridden by JSON input.
+
+6. 💥 **Fight choreography expansion**
+   - For scenes with mood `angry` or `epic`, automatically extend duration and add extra SFX: sword_clash, explosion, battle_horn.
+
+7. 🎥 **Camera effects**
+   - Function: `apply_camera_effects(clip, mood)`
+   - Apply zoom, pan, shake, fade, or dark overlays depending on scene mood.
+
+8. 🔊 **SFX overlay**
+   - Each scene may define `sfx` (normal) and `sfx_timed` (timed playback).
+   - Automatically injects fight SFX for expanded fight scenes.
+
+9. ⏱️ **Duration control**
+   - Each scene has a `duration` in JSON.
+   - Fight scenes are automatically extended.
+
+10. 🖼️ **Subtitles rendered**
+    - Overlay translated subtitles onto scene images using MoviePy/TextClip.
+    - Default language = English.
+
+11. 🎬 **Final video export**
+    - Concatenate all scene clips and export as `outputs/anime_output.mp4`.
+
+12. 🗂️ **JSON-driven input**
+    - The script should read a `story.json` file from the project root.
+    - The JSON format must support:
+      ```
+      {
+        "title": "Story Title",
+        "scenes": [
+          {
+            "id": INT,
+            "description": "Scene description",
+            "duration": FLOAT,
+            "mood": "happy|sad|romantic|epic|angry|mystery|neutral",
+            "bgm": "filename.mp3",
+            "sfx": ["filename.mp3", ...],
+            "sfx_timed": [{"file": "filename.mp3", "time": FLOAT}, ...],
+            "camera": "zoom|pan|shake|fade|none",
+            "dialogue": [
+              {
+                "character": "Character Name",
+                "text": "Dialogue text",
+                "lang": "hi|en|ja",
+                "voice": "slang/dialect (optional)"
+              }
+            ]
+          }
+        ]
+      }
+      ```
+
+13. 🔧 **Project structure**
+    ```
+    anime_generator/
+    │── main.py
+    │── story.json
+    │── assets/
+    │    ├── bgm/
+    │    ├── sfx/
+    │── outputs/
+    │── temp/
+    │── requirements.txt
+    │── README.md
+    ```
+
+14. 💡 **Documentation**
+    - Include docstrings for all functions.
+    - Explain which function handles which feature.
+    - Include instructions on running the script in Windows: installing Python, packages, placing models, assets folder usage.
+    - Provide clear instructions on input JSON structure.
+
+15. 🧩 **Extras**
+    - Automatically handle audio/video synchronization.
+    - Ensure all audio clips (BGM, SFX, voice) are properly mixed.
+    - Make the code modular, with separate helper functions for:
+      - Image generation
+      - Voice synthesis
+      - Subtitle generation
+      - Camera effects
+      - Audio mixing
+      - Scene compilation
+      - Final video export
+
+---
+
+**Instructions for the AI:**  
+
+- Generate only **Python code** for `main.py`.
+- Include **import statements**, dependencies, and placeholders for assets/models.
+- Use standard Python libraries (`os`, `json`, `subprocess`) and popular multimedia packages (`moviepy`, `Pillow`, `gTTS`, `coqui_ai`, `pydub`, `deep-translator`) in your code.
+- Ensure the code can run on **Windows** with clear paths for assets and outputs.
+- Include error handling for missing assets, invalid JSON, or missing TTS voices.
+
+---
+
+**Output:** Full Python script `main.py` ready to run with all features implemented as discussed.
+
+
+
+
+
+----------------------------------------------------------------------------------------------------
+
+input json prompt:
+
+You are an AI that generates anime story scripts in JSON format. 
+
+Requirements:
+- Output must be a valid JSON with the structure:
+{
+  "title": "Story Title",
+  "scenes": [
+    {
+      "id": INT,
+      "description": "Detailed scene description",
+      "duration": FLOAT,  // seconds
+      "mood": "happy|sad|romantic|epic|angry|mystery|neutral",
+      "bgm": "filename.mp3", // optional
+      "sfx": ["filename.mp3", ...], // optional
+      "sfx_timed": [{"file": "filename.mp3", "time": FLOAT}, ...], // optional
+      "camera": "zoom|pan|shake|fade|none", // optional
+      "dialogue": [
+        {
+          "character": "Character Name",
+          "text": "Dialogue text",
+          "lang": "hi|en|ja", 
+          "voice": "slang/dialect name (optional: hindi_mumbaiya, hindi_bihari, hindi_up, hindi_haryanvi)"
+        }
+      ]
+    }
+  ]
+}
+
+Guidelines:
+- Include multiple scenes (min 3-5) with different moods and durations.
+- Make sure to test fight scenes with mood "angry" or "epic".
+- Include at least one line in Hindi with a regional slang, one in English, and one in Japanese.
+- Use `sfx` and `sfx_timed` to demonstrate sound effects timing.
+- Include camera effects where appropriate.
+- Provide BGM filenames matching mood if possible.
+- Make sure JSON is valid and directly usable in main.py.
+
+Output only the JSON. Do not add explanations or text outside the JSON.

@@ -1,0 +1,30 @@
+
+{
+  "style": "shinkai",
+  "default_language": "hindi",
+  "default_subtitle": "en",
+  "characters": {
+    "A": { "dialect": "mumbai", "voices": {"hindi": "voice1"} },
+    "B": { "dialect": "haryanavi", "voices": {"hindi": "voice2"} }
+  },
+  "scenes": [
+    {
+      "character": "A",
+      "description": "Two friends on a rooftop at sunset",
+      "dialogue": "Tum kahan ho?",
+      "mood": "romantic",
+      "camera": "zoom_in",
+      "sfx": ["footsteps"],
+      "duration": 6
+    },
+    {
+      "character": "B",
+      "description": "Two warriors facing each other under a blood-red moon",
+      "dialogue": "Ye aaj khatam hoga!",
+      "mood": "angry",
+      "camera": "shake",
+      "sfx": ["sword_clash", "explosion"],
+      "duration": 8
+    }
+  ]
+}

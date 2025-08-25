@@ -1,0 +1,363 @@
+Great — below is a complete, tightly organized breakdown of **everything your updated script does**, how it builds an anime video step-by-step, which *models* do what, and which *Python packages* are used for each responsibility. I’ve included implementation mappings (function names), expected inputs/outputs, asset locations, runtime behavior, voice options and tradeoffs, character-consistency strategies, hardware notes, and anything else you’d need to fully understand and operate the system.
+
+If you want a one-page cheat-sheet or to drill into any single feature, tell me which and I’ll expand it.
+
+---
+
+# At-a-glance summary
+
+Your `main.py` pipeline converts a `story.json` into a final `outputs/anime_output.mp4`.
+It performs (in order): **scene image generation → scene audio assembly (voices, BGM, SFX) → subtitles → camera effects → audio mixing → concatenation → final MP4**.
+
+Key components:
+
+* **Image generation:** Stable Diffusion via Automatic1111 WebUI (recommended) or a Pillow placeholder (stub).
+* **Character consistency:** reference images + IP-Adapter / ControlNet / LoRA (when using WebUI).
+* **TTS / voices:** Microsoft Edge neural voices via `edge_tts` (preferred fallback to gTTS). Per-character voice selection + slang preprocessing.
+* **Subtitles:** `deep_translator` for translations + `moviepy.TextClip` (ImageMagick required) to render subtitles.
+* **Audio mixing & video assembly:** `moviepy` + `ffmpeg`.
+* **SFX & BGM:** asset folders `assets/bgm` and `assets/sfx` (looping and timed insertion).
+* **Outputs & temp files:** `temp/` for intermediate files, `outputs/` for final video.
+
+---
+
+# 1) Full feature list — what the script handles (with function mapping)
+
+Below each feature I list the *function or area of code that implements it* and a short note.
+
+1. **Read story JSON**
+
+   * Entry: `if __name__ == "__main__"` → `build_anime_video(story_json)`
+   * Reads `story.json` and iterates scenes.
+
+2. **Image generation (anime-style)**
+
+   * Function(s): `generate_scene_image()` (+ optional `generate_image_via_webui()` in the fuller version)
+   * Behavior: If WebUI is enabled/available, call Automatic1111 txt2img API (prompted as `"anime style, ... {scene_desc}"`). Otherwise fallback to basic Pillow placeholder image.
+
+3. **Character registry & consistency**
+
+   * Config: `CHARACTER_REGISTRY` (dictionary)
+   * Behavior: If a character in scene has `ref_image` or `lora` listed, script supplies that reference to WebUI (via `init_images` / ControlNet / IP-Adapter payload or LoRA `styles`). This yields consistent face/style across scenes.
+
+4. **BGM auto-selection by mood (with override)**
+
+   * Function: `pick_bgm(mood)`
+   * Behavior: If scene JSON does not specify `bgm`, it returns `assets/bgm/<mood>.mp3`. Script loads BGM and loops as needed.
+
+5. **SFX overlay and timed SFX**
+
+   * Where: `build_scene()`
+   * Behavior: Loads files from `assets/sfx`. `sfx` are played at scene start; `sfx_timed` entries allow `{"file": "...", "time": x}` to play SFX at time `x` seconds into the scene.
+
+6. **Fight choreography expansion**
+
+   * Where: `build_scene()` for `mood in ("epic","angry")`
+   * Behavior: Adds built-in battle SFX (`sword_clash`, `explosion`, `battle_horn`) at random times and extends scene duration automatically (adds e.g. +3 sec). Ensures dramatic audio layering.
+
+7. **Voice synthesis per line, per character**
+
+   * Functions: `synthesize_voice()` wrapper, `synthesize_voice_async()` with `edge_tts` (and fallback to `gTTS`)
+   * Behavior: For each dialogue line: apply `apply_slang()` if slang specified, synthesize a voice file (saved to `temp/`), and append its audio to the scene audio tracks. Script supports specifying `voice_name` per dialogue line (`voice_name` = Edge/Microsoft voice like `"en-US-JennyNeural"` or `"hi-IN-MadhurNeural"`).
+
+8. **Regional slangs/dialects**
+
+   * Function: `apply_slang(text, slang)`
+   * Behavior: Simple text transformations to simulate Mumbaiya, Bihari, Haryanvi, UP flavors. Used *before* TTS so the spoken output includes the flavor.
+
+9. **Subtitles auto-translation and overlay**
+
+   * Functions: `generate_subtitles()` (uses `deep_translator.GoogleTranslator`), and `TextClip` overlay in `build_scene()`
+   * Behavior: Translate lines to English (default overlay), also produce HI/JA translations (logged). Overlay rendered using `moviepy.TextClip` (requires ImageMagick to be available).
+
+10. **Camera effects**
+
+    * Function: `apply_camera_effects(clip, mood)`
+    * Effects supported: fadein/fadeout, color darkening, zoom (tiny progressive `resize(lambda t: 1 + scale * t)`), and shake/pan combos can be built similarly. Applied at scene level.
+
+11. **Audio mixing**
+
+    * Uses: `moviepy.audio.CompositeAudioClip`
+    * Behavior: Collects BGM, SFX, and synthesized voice tracks, aligns them with `.set_start()` and `.volumex()` appropriately, and composes them into a single audio track assigned to the clip.
+
+12. **Duration control**
+
+    * Scene uses `scene["duration"]` as baseline; fight expansion may increase it. All audio clips are `.set_duration(duration)` to avoid premature truncation.
+
+13. **Subtitles overlay & final composition**
+
+    * `CompositeVideoClip([clip, subclip])` overlays subtitle clip on top of the image clip.
+
+14. **Video export**
+
+    * `final.write_videofile(output_path, fps=24)` (MoviePy → ffmpeg does the encoding). Output defaults to `outputs/anime_output.mp4`.
+
+15. **Fallbacks and error handling**
+
+    * If WebUI unreachable → fallback placeholder images.
+    * If Edge-TTS generation fails → fallback to `gTTS`.
+    * If audio or asset missing → prints warning and continues (not crashy).
+
+16. **Temporary file handling & outputs**
+
+    * `TEMP_DIR` stores temp images and voice files. `OUTPUT_DIR` holds final MP4.
+
+---
+
+# 2) Step-by-step runtime pipeline (what happens when you run `python main.py story.json`)
+
+1. **Load `story.json`** (root-level keys: `title`, `scenes[]`).
+2. Loop over scenes:
+
+   * Call `build_scene(scene, scene_id)`:
+
+     * Generate/obtain `scene` image:
+
+       * If `WEBUI_API` enabled → `generate_image_via_webui(prompt, out_path, ref_image, lora)`. WebUI returns base64 image → saved to `temp/scene_{id}.png`.
+       * Else → placeholder image via Pillow.
+     * Create `ImageClip(img_path).set_duration(duration)`.
+     * Load BGM: user-specified or `pick_bgm(mood)`; loop or trim to scene duration.
+     * Load `sfx` and `sfx_timed`. Apply `.set_start()` for timed ones.
+     * For each dialogue line:
+
+       * Apply slang conversion if requested.
+       * Synthesize voice: `edge_tts` via `synthesize_voice_async()` saving to `temp/voice_scene{scene}_{idx}.mp3` (or fallback `gTTS`).
+       * Append voice `AudioFileClip` to audio\_tracks.
+       * Translate text via `deep_translator` and collect English string for subtitle overlay.
+     * Compose subtitle `TextClip` (via MoviePy) and overlay it on the image clip.
+     * Apply camera effects: zoom/pan/shake/fade via MoviePy `vfx`.
+     * Mix audio tracks into `CompositeAudioClip` with proper durations and volumes.
+     * Set clip audio to the composed audio.
+   * Append clip to `clips` list.
+3. **Concatenate scenes**: `concatenate_videoclips(clips, method="compose")`.
+4. **Write final video**: `final.write_videofile(outputs/anime_output.mp4, fps=24)` — uses `ffmpeg` under the hood to encode MP4.
+5. **Done**.
+
+---
+
+# 3) JSON input: exact mapping and allowed fields
+
+Each scene in `story.json` may contain:
+
+```json
+{
+  "id": 1,
+  "description": "Long descriptive prompt for the scene (used to generate image).",
+  "duration": 10.0,
+  "mood": "epic",                      // mood -> affects BGM/fight logic
+  "bgm": "custom.mp3",                 // optional filename in assets/bgm OR full path
+  "sfx": ["footsteps.mp3"],            // optional list of filenames (played at start)
+  "sfx_timed": [{"file":"thunder.mp3", "time": 5.0}], // optional timed SFX
+  "camera": "zoom",                    // used by camera effects
+  "characters": ["Hero","Villain"],    // optional list - used to pass ref images
+  "dialogue": [
+     {
+       "character": "Hero",
+       "text": "Tumhara waqt aa gaya!",
+       "lang": "hi",                    // "hi" | "en" | "ja"
+       "voice": "hindi_mumbaiya",       // slang key for apply_slang()
+       "voice_name": "hi-IN-MadhurNeural" // Edge-TTS voice name (per line)
+     }
+  ]
+}
+```
+
+Notes:
+
+* `voice_name` is optional; fallback default used. Make sure voice names are supported by `edge_tts`.
+* If `bgm` is blank or null, script selects `assets/bgm/<mood>.mp3`.
+
+---
+
+# 4) Models — which model does what & where to place them
+
+> These are not Python packages but large model files you must download separately for image generation or advanced TTS/voice cloning.
+
+### A. Stable Diffusion checkpoints (for high-quality anime images)
+
+* **Role:** produce anime-style frames from text prompts.
+* **Examples (anime-oriented):** AnythingV5, Counterfeit-V3, AOM3, DreamShaper.
+* **Where to get:** Civitai, Hugging Face (respect licenses).
+* **Where to put:** `stable-diffusion-webui/models/Stable-diffusion/` (Automatic1111).
+* **How used:** WebUI loads checkpoint; your script calls WebUI `txt2img` API.
+
+### B. IP-Adapter / ControlNet adapters
+
+* **Role:** condition generation on a reference image to preserve face/style.
+* **Where to get:** IP-Adapter/ControlNet extension/model files; use extension install in Automatic1111.
+* **How used:** Supply `init_images` or appropriate API payload so generated frames keep reference face.
+
+### C. LoRA (.safetensors)
+
+* **Role:** small adapters trained to represent a specific character/style. Loadable in WebUI to bias outputs. Stronger consistency across poses and outfits.
+* **Where to put:** `stable-diffusion-webui/models/Lora/`
+* **How used:** WebUI `styles` or `alwayson_scripts` payloads; script can send `styles: [ "<lora_name>:<weight>" ]`.
+
+### D. TTS models (if you chose local TTS alternatives)
+
+* **Coqui TTS:** multiple downloadable models (multilingual/xtts\_v2). *Requires install & compiled dependencies*.
+* **Edge-TTS:** uses Microsoft Edge Neural voices via online service (no local model file needed). If you need *fully offline* local neural TTS, Coqui or other open-source TTS with compatible wheels is required (more complex install).
+
+---
+
+# 5) Python packages used & exact responsibility
+
+(Use `pip install -r requirements.txt` to get these; exact versions in your repo.)
+
+* **moviepy** — video assembly, compositing, TextClip for subtitles, audio mixing (depends on ffmpeg).
+
+  * Used for: `ImageClip`, `AudioFileClip`, `CompositeAudioClip`, `CompositeVideoClip`, `TextClip`, `vfx`, `write_videofile`.
+
+* **ffmpeg** (external executable) — audio/video encoding/decoding; required for `moviepy.write_videofile`.
+
+  * Installable separately and put in PATH.
+
+* **ImageMagick** (external executable) — required by `moviepy.TextClip` on Windows to render text/captions.
+
+* **edge\_tts** — Microsoft Edge Neural TTS interface (connects to Microsoft Edge speech service to synthesize high-quality voices).
+
+  * Used as primary TTS in updated script for realistic voices.
+
+* **gTTS** — fallback Google TTS if edge\_tts fails (requires internet).
+
+* **deep-translator** — translations (Google Translator wrapper) for subtitles (EN/HI/JA).
+
+* **Pillow (PIL)** — placeholder image generation; also used by some MoviePy internals.
+
+* **requests** — call Automatic1111 WebUI API (`txt2img` / `sdapi/v1/etc`).
+
+* **numpy** — used indirectly by moviepy and image handling.
+
+* **pydub** — optional for audio manipulations if you extend mixing beyond MoviePy.
+
+---
+
+# 6) Assets & expected folder layout (how to prepare files)
+
+Place these files in the following structure:
+
+```
+anime_generator/
+│─ main.py
+│─ story.json
+│─ assets/
+│   ├─ bgm/
+│   │   ├─ happy.mp3
+│   │   ├─ sad.mp3
+│   │   ├─ epic.mp3
+│   │   └─ neutral.mp3
+│   ├─ sfx/
+│   │   ├─ footsteps.mp3
+│   │   ├─ sword_clash.mp3
+│   │   └─ explosion.mp3
+│   └─ characters/        # optional reference portraits for character consistency
+│       ├─ hero.png
+│       └─ villain.png
+│─ outputs/
+│─ temp/
+│─ requirements.txt
+```
+
+Naming conventions:
+
+* BGM and SFX should be in `assets/bgm/` and `assets/sfx/`. Use the same filenames that `story.json` expects (or leave `bgm` empty and let mood auto-pick).
+* Character `ref_image` paths in `CHARACTER_REGISTRY` may be relative to `assets/characters/`.
+
+---
+
+# 7) Voice configuration & how to assign voices to characters
+
+* Each dialogue object may include `"voice_name": "<Edge voice>"`. Examples:
+
+  * English: `"en-US-JennyNeural"`, `"en-US-GuyNeural"`, `"en-GB-RyanNeural"`
+  * Hindi: `"hi-IN-MadhurNeural"`, `"hi-IN-FaizalNeural"` (examples; check available Edge voices)
+  * Japanese: `"ja-JP-NanamiNeural"`, `"ja-JP-DaichiNeural"`
+
+**How to map:**
+
+* In `story.json`, include `"voice_name"` in each dialogue line.
+* Or in `CHARACTER_REGISTRY` set `"voice_id"` / `"voice_name"` for characters, then omit per-line `voice_name`. Script will pick character-level voice if line-level absent.
+
+**Slang:** set `"voice": "hindi_mumbaiya"` (this is applied as text transform); YOU still pick an actual voice (e.g., `"hi-IN-MadhurNeural"`). Slang + voice\_name produces dialectal audio.
+
+**Edge-TTS notes:**
+
+* `edge_tts` generally makes requests to Microsoft endpoints (it doesn’t require Azure credentials but uses public Edge service endpoints inside code). It requires internet access. If you need 100% offline, choose Coqui TTS or other local engines (more complex).
+
+---
+
+# 8) Character consistency strategies — pick one or combine
+
+1. **Reference image + IP-Adapter / ControlNet (recommended, easiest)**
+
+   * Generate one portrait you like in WebUI; save it as `assets/characters/hero.png`. Use `ref_image` in `CHARACTER_REGISTRY` and pass it with each `txt2img` call so generated frames reuse the face.
+
+2. **LoRA file for the character (stronger)**
+
+   * If you can collect 10–50 images (or generate variations), train a LoRA for the character and load it in WebUI. When generating scenes, pass LoRA name/weight to keep character consistent.
+
+3. **Prompt engineering + negative prompts**
+
+   * Useful but brittle. Combine with reference images for best results.
+
+4. **Face-preservation pipelines / face restoration**
+
+   * After generation, denoise/face-unify with face-restoration tools inside WebUI.
+
+---
+
+# 9) Performance & hardware notes
+
+* **NVIDIA GPU (CUDA)**: fastest. Use `torch` with CUDA, Automatic1111 will utilize GPU.
+* **Intel Arc / AMD GPUs**: consider **DirectML** or ONNX builds/forks of WebUI; performance varies. CPU-only is possible but slow.
+* **CPU-only**: feasible for small test images but slow for many scenes or high-res outputs.
+* **TTS (edge\_tts)**: network-dependent (online). `gTTS` also online. Local Coqui TTS will require `torch` and may benefit from GPU.
+
+Memory/disk:
+
+* Stable Diffusion models are large (3–10+ GB). LoRA and adapters also consume disk. Keep 50+ GB free.
+
+---
+
+# 10) Limitations, gotchas & what to expect
+
+* **Image quality depends on the model**: using anime-targeted models (AnythingV5, DreamShaper) produces top anime visuals. The placeholder will not look like anime.
+* **Character consistency is not perfect** unless you use reference conditioning or LoRA. IP-Adapter + good prompts give strong results.
+* **Edge-TTS is online** — if you must be fully offline, install Coqui TTS or other local engines (requires build tools and possibly GPU).
+* **Subtitles require ImageMagick** on Windows; if missing `TextClip` will crash.
+* **FFmpeg must be on PATH** for MoviePy to write MP4.
+* **Licensing**: follow model licenses (Civitai/HuggingFace).
+
+---
+
+# 11) Quick checklist to run successfully (one-liner style)
+
+1. Install Python 3.11 and create/activate venv.
+2. Install pip packages: `pip install -r requirements.txt`.
+3. Install **FFmpeg** and add to PATH.
+4. Install **ImageMagick** and add to PATH.
+5. Install and run **Automatic1111 WebUI** with `--api` and place a good anime model in `models/Stable-diffusion/`. (Optional but required for real anime images.)
+6. Prepare `assets/bgm/` and `assets/sfx/` with sample mp3s.
+7. Place optional reference images into `assets/characters/` and populate `CHARACTER_REGISTRY` if you want consistency.
+8. Run: `python main.py story.json` → output `outputs/anime_output.mp4`.
+
+---
+
+# 12) Next steps / recommended improvements (if you want higher fidelity)
+
+* **Replace stub image generator** with direct `generate_image_via_webui()` usage and tune prompts (add “cinematic, anime, high detail, studio lighting, dynamic pose”).
+* **Use LoRA** for main characters if you want near-identical faces in all poses — train via Colab or use a LoRA trainer.
+* **Use AnimateDiff / video diffusion** or frame interpolation to animate characters for smoother motion between still frames.
+* **Add per-line emotion tags** for TTS (Edge/Coqui often support SSML or prosody parameters).
+* **Implement per-frame camera motion** (keyframed pan/zoom) rather than simple `resize(lambda t: ...)` for more cinematic movement.
+* **Audio ducking** (reduce BGM volume while dialogue plays) to improve intelligibility.
+
+---
+
+If you’d like, I can now:
+
+* (A) Produce a **concise cheat-sheet** you can print and stick near your workstation (with exact commands to install ffmpeg/ImageMagick and to test WebUI API).
+* (B) Produce an **example `CHARACTER_REGISTRY` and an improved sample `story.json`** that demonstrates every feature, with voice names and reference images set.
+* (C) Update the script to automatically detect Edge-TTS voice names available to you and print them so you can pick voices interactively.
+
+Which one next?

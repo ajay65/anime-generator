@@ -1,0 +1,36 @@
+
+google-generativeai
+google-genai
+# pydub
+# gTTS==2.5.4
+# TTS  # Coqui TTS
+
+
+# Core video/audio/image
+moviepy==1.0.3
+pydub==0.25.1
+Pillow==9.5.0           # <10 to avoid MoviePy compatibility issues
+numpy==1.24.4
+
+# TTS & translation
+# deep-translator==1.11.4
+# gTTS==2.5.4
+# TTS==0.11.1             # Coqui TTS - requires Python 3.11 and additional dependencies (see README)
+edge-tts
+
+# Networking and utilities
+# requests==2.31.0
+
+# Optional if using advanced features locally:
+# soundfile==0.12.1      # sometimes required by TTS
+
+
+
+gTTS
+requests
+imageio
+imageio-ffmpeg
+Pillow
+deep-translator
+python-dotenv
+
