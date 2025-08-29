@@ -4,4 +4,5 @@ ffmpeg-2025-08-20-git-4d7c609be3-essentials_build
 .venv
 generated_images
 models
+anime_gen
 

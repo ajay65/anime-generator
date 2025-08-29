@@ -1,0 +1,17 @@
+{
+  "model_name": "waifu_diffusion",
+  "positive_prompt": "1girl, maid outfit, apron, maid headdress, red hair, side ponytail, red eyes, surprised expression, masterpiece, best quality, high resolution, detailed, anime style, official art, extremely detailed",
+  "negative_prompt": "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, blurry, deformed, disfigured, mutation, mutated, ugly, disgusting, amputation, realistic, 3d",
+  "steps": 15,
+  "guidance_scale": 7.5,
+  "width": 512,
+  "height": 512,
+  "seed": null,
+  "generation_time_seconds": 17.856693,
+  "timestamp": "20250828_210830",
+  "system_info": {
+    "device": "xpu",
+    "torch_dtype": "torch.float16",
+    "system": "Intel Ultra 9 185H + 32GB RAM"
+  }
+}

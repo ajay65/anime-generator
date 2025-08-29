@@ -1,0 +1,17 @@
+{
+  "model_name": "waifu_diffusion",
+  "positive_prompt": "1girl, anime style, blue hair, school uniform, smiling, masterpiece",
+  "negative_prompt": "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, blurry, deformed, disfigured, mutation, mutated, ugly, disgusting, amputation, realistic, 3d",
+  "steps": 20,
+  "guidance_scale": 7.5,
+  "width": 512,
+  "height": 512,
+  "seed": 42,
+  "generation_time_seconds": 32.249226,
+  "timestamp": "20250828_215401",
+  "system_info": {
+    "device": "xpu",
+    "torch_dtype": "torch.float16",
+    "system": "Intel Ultra 9 185H + 32GB RAM"
+  }
+}

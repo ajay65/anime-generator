@@ -1,0 +1,30 @@
+week 1
+
+https://pytorch-extension.intel.com/installation?platform=gpu&version=v2.5.10%2Bxpu&os=windows&package=pip
+
+pip install diffusers transformers accelerate pillow 
+
+python -m pip install torch==2.5.1+cxx11.abi torchvision==0.20.1+cxx11.abi torchaudio==2.5.1+cxx11.abi intel-extension-for-pytorch==2.5.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/mtl/us/
+
+
+python -c "import torch; import intel_extension_for_pytorch as ipex; print(torch.__version__); print(ipex.__version__); [print(f'[{i}]: {torch.xpu.get_device_properties(i)}') for i in range(torch.xpu.device_count())];"
+
+
+-------------------------------------final------------------------------------------
+
+1 update intel graphic card
+2 install oneapi base
+3. pip install --upgrade mkl==2025.1.0 mkl-dpcpp==2025.1.0 onemkl-sycl-blas==2025.1.0 onemkl-sycl-dft==2025.1.0 onemkl-sycl-lapack==2025.1.0 onemkl-sycl-rng==2025.1.0 onemkl-sycl-sparse==2025.1.0 onemkl-sycl-datafitting==2025.1.0 onemkl-sycl-stats==2025.1.0 onemkl-sycl-vm==2025.1.0
+4. pip install torch==2.8.0+xpu torchvision torchaudio --index-url https://download.pytorch.org/whl/xpu
+5. pip install intel-extension-for-pytorch==2.8.10+xpu --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/
+6. deactivate
+7. "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" in cmd
+8 venv activate
+
+9 OR add C:\Program Files (x86)\Intel\oneAPI\compiler\latest\bin , C:\Program Files (x86)\Intel\oneAPI\mkl\latest\bin
+in env variable
+
+pip install hf_xet : faster download
+
+pip install ipykernel
+python -m ipykernel install --user --name=anime_gen
