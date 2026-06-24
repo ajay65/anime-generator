@@ -1,4 +1,3 @@
-Awesome—here’s a **clean, fully-revised `README.md`** that matches the latest script (which uses **edge-tts**, Stable Diffusion via **diffusers**, MoviePy, and the full feature set you asked for). I’ve expanded **Steps 2, 3, 4** in depth and included exactly **what each package/model does and why we install it**.
 
 ---
 
