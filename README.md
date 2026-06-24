@@ -1,7 +1,3 @@
-Got it ✅
-Here’s a **well-structured `README.md`** for your updated script with **Stable Horde integration, Edge-TTS voices, and character consistency system**.
-
----
 
 # 🎬 AI Anime Generator
 
