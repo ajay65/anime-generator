@@ -1,7 +1,7 @@
 
 ---
 
-# 🎬 Anime Generator (Local, Windows 11)
+# 🎬 Anime Generator
 
 Create professional, Japanese-style anime videos **locally** from a single `story.json`.
 The script automatically generates **anime images**, **keeps characters consistent**, assigns **natural neural voices** (with slangs/dialects), overlays **subtitles**, mixes **BGM/SFX**, applies **camera effects**, and exports a final **MP4**.
@@ -431,4 +431,3 @@ Result: `outputs/anime_output.mp4`
 
 ---
 
-If you want, I can also drop in a **fresh `story.json`** that exercises every single feature toggle again (moods, slangs, timed SFX, camera flags, per-character voice hints).
