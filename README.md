@@ -213,7 +213,3 @@ Result:
 * [ ] Local Stable Diffusion (if you add a GPU later).
 
 ---
-
-✅ This README explains **every feature, every dependency, and step 2–3–4 (Stable Horde setup + models + consistency)** in detail.
-
-Do you want me to also **update `requirements.txt`** to include `python-dotenv` so that the script reads `HORDE_API_KEY` automatically?
