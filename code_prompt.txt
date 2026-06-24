@@ -1,9 +1,4 @@
 
-# 🔹 Master Prompt (Save This)
-
-Here’s the **one-shot master prompt** you can reuse anytime to regenerate the **whole project**:
-
-```
 You are an expert Python developer, multimedia engineer, and anime fan.
 
 I want you to generate a **complete Python project** that creates **anime-style videos from a story JSON file**.  
